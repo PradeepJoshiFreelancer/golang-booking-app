@@ -10,18 +10,21 @@
       integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9"
       crossorigin="anonymous"
     />
-    <style>
-      .my-footer {
-        background-color: rgb(88, 82, 133);
-        margin-top: 1.5em;
-        padding: 2em;
-        font-size: 80%;
-        color: white;
-      }
-      .room-image {
-        max-width: 50%;
-      }
-    </style>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/vanillajs-datepicker@1.3.3/dist/css/datepicker-bs4.min.css"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://unpkg.com/notie/dist/notie.min.css"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="static/css/styles.css"
+    />
+
   </head>
   <body>
     <!-- <nav class="navbar navbar-expand-lg bg-body-tertiary"> -->
@@ -88,38 +91,45 @@
           <form action="make-reservations.html" method="GET">
             <div class="row">
               <div class="col">
-                <div class="form-group mb-3">
-                  <label for="start-date" class="form-label">Start Date</label>
-                  <input required
-                    type="date"
-                    class="form-control"
-                    id="start-date"
-                    name="start-date"
-                    aria-describedby="startDateHelp"
-                  />
-                  <div id="start-date" class="form-text">
-                    Enter your start date in form for YYYY-MM-DD
+                <div class="row" id="date-picker">
+                  <div class="col">
+                    <div>
+                      <input
+                        type="text"
+                        required
+                        class="form-control"
+                        name="start"
+                        placeholder="Arrival Date"
+                      />
+                    </div>
                   </div>
-                </div>
-              </div>
-              <div class="col">
-                <div class="form-group mb-3">
-                  <label for="end-date" class="form-label">End Date</label>
-                  <input required
-                    type="date"
-                    class="form-control"
-                    id="end-date"
-                    name="end-date"
-                    aria-describedby="endDateHelp"
-                  />
-                  <div id="end-date" class="form-text">
-                    Enter your end date in form for YYYY-MM-DD
+                  <div class="col">
+                    <input
+                      type="text"
+                      required
+                      class="form-control"
+                      name="end"
+                      placeholder="Departure Date"
+                    />
                   </div>
                 </div>
               </div>
             </div>
-            <button type="submit" class="btn btn-primary">Search Availability</button>
+            <hr />
+            <button type="submit" class="btn btn-primary">
+              Search Availability
+            </button>
           </form>
+        </div>
+      </div>
+      <div class="col">
+        <div class="row">
+          <p id="temp-text">Learning Java Scrip.</p>
+          <p>
+            <button class="btn btn-outline-secondary" id="color-button">
+              Click me to change color
+            </button>
+          </p>
         </div>
       </div>
     </div>
@@ -138,5 +148,142 @@
       integrity="sha384-Rx+T1VzGupg4BHQYs2gCW9It+akI2MM/mndMCy36UVfodzcJcF0GGLxZIzObiEfa"
       crossorigin="anonymous"
     ></script>
+    <script src="https://cdn.jsdelivr.net/npm/vanillajs-datepicker@1.3.3/dist/js/datepicker-full.min.js"></script>
+    <script src="https://unpkg.com/notie"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+      var attention = Promt();
+
+      document
+        .getElementById("color-button")
+        .addEventListener("click", function () {
+          var html = `
+          <form action="" id="check-availbility-form" method="post" noValidation class="needs-validation">
+            <div class="row">
+              <div class="col-md-10">
+                <div class="row" id="date-picker-1">
+                  <div class="col">
+                    <div>
+                      <input
+                      
+                      type="text"
+                        required
+                        class="form-control"
+                        id="start"
+                        name="start"
+                        placeholder="Arrival Date"
+                        />
+                        </div>
+                        </div>
+                        <div class="col">
+                          <input
+                          id="end"
+                          type="text"
+                          required
+                          class="form-control"
+                          name="end"
+                          placeholder="Departure Date"
+                          />
+                          </div>
+                   </div>
+                </div>
+              </div>
+            </form>
+                          `;
+          attention.custom({ title: "Choose your dates", msg: html });
+        });
+
+      const elem = document.getElementById("date-picker");
+      const rangepicker = new DateRangePicker(elem, {
+        format: "yyyy-mm-dd",
+      });
+
+      function notify(msg, messageType) {
+        notie.alert({
+          type: messageType,
+          text: msg,
+        });
+      }
+      function notifyModal(title, text, icon, buttonText) {
+        Swal.fire({
+          title: title,
+          html: text,
+          icon: icon,
+          confirmButtonText: buttonText,
+        });
+      }
+      function Promt() {
+        const toast = ({
+          icon = "success",
+          title = "",
+          position = "top-end",
+        }) => {
+          const Toast = Swal.mixin({
+            toast: true,
+            position: position,
+            icon: icon,
+            title: title,
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+              toast.addEventListener("mouseenter", Swal.stopTimer);
+              toast.addEventListener("mouseleave", Swal.resumeTimer);
+            },
+          });
+
+          Toast.fire();
+        };
+        const success = ({ title = "", msg = "", footer = "" }) => {
+          Swal.fire({
+            icon: "success",
+            title: title,
+            text: msg,
+            footer: footer,
+          });
+        };
+        const error = ({ title = "", msg = "", footer = "" }) => {
+          Swal.fire({
+            icon: "error",
+            title: title,
+            text: msg,
+            footer: footer,
+          });
+        };
+        const custom = async ({ title = "", msg = "" }) => {
+          const { value: formValues } = await Swal.fire({
+            title: title,
+            html: msg,
+            backdrop: true,
+            showCancelButton: true,
+            focusConfirm: false,
+            willOpen: () => {
+              const elem = document.getElementById("date-picker-1");
+              const rangepicker = new DateRangePicker(elem, {
+                format: "yyyy-mm-dd",
+                showOnFocus: false,
+                orientation: "top"
+              });
+            },
+            preConfirm: () => {
+              return [
+                document.getElementById("start").value,
+                document.getElementById("end").value,
+              ];
+            }
+          });
+
+          if (formValues) {
+            Swal.fire(JSON.stringify(formValues));
+          }
+        };
+        return {
+          toast: toast,
+          success: success,
+          error: error,
+          custom: custom,
+        };
+      }
+    </script>
   </body>
 </html>
