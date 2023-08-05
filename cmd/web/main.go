@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/alexedwards/scs/v2"
-	"github.com/pradeepj4u/bookings/pkg/config"
-	"github.com/pradeepj4u/bookings/pkg/handler"
-	"github.com/pradeepj4u/bookings/pkg/render"
+	"github.com/pradeepj4u/bookings/internal/config"
+	"github.com/pradeepj4u/bookings/internal/handler"
+	"github.com/pradeepj4u/bookings/internal/render"
 )
 
 var portNumber = ":8080"
@@ -35,7 +35,7 @@ func main() {
 		log.Fatal(err)
 	}
 	app.TempletCache = tc
-	app.UseCache = true
+	app.UseCache = false
 
 	repo := handler.NewRpository(&app)
 	handler.NewHandller(repo)

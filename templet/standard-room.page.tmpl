@@ -1,0 +1,110 @@
+{{template "base" .}}
+
+{{define "content"}}
+   <div class="container">
+      <div class="row">
+        <div class="col">
+          <img
+            src="/static/image/standard-room.png"
+            class="img-fluid img-thumbnail mx-auto d-block room-image"
+            alt="standard-room"
+          />
+        </div>
+      </div>
+      <div class="row">
+        <div class="col">
+          <h1 class="text-center mt-4">Standard Room</h1>
+          <p>
+            This is the random text that can be used to display the intro
+            paragraph for your site. This is the random text that can be used to
+            display the intro paragraph for your site.This is the random text
+            that can be used to display the intro paragraph for your site.This
+            is the random text that can be used to display the intro paragraph
+            for your site.
+          </p>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col text-center">
+          <a href="#!"  id="check-availibility-sr"class="btn btn-success"
+            >Check Availability</a
+          >
+        </div>
+      </div>
+    </div>
+
+{{end}}
+{{define "js"}}
+<script>
+        document
+        .getElementById("check-availibility-sr")
+        .addEventListener("click", function () {
+          var html = `
+          <form action="" id="check-availbility-form" method="post" noValidation class="needs-validation">
+            <div class="d-flex flex-row justify-content-evenly">
+              <div class="col-md-10">
+                <div class="row" id="date-picker-1">
+                  <div class="col">
+                    <div>
+                      <input
+                        type="text"
+                        required
+                        class="form-control"
+                        id="start"
+                        name="start"
+                        placeholder="Arrival Date"
+                      />
+                    </div>
+                  </div>
+                  <div class="col">
+                    <input
+                      id="end"
+                      type="text"
+                      required
+                      class="form-control"
+                      name="end"
+                      placeholder="Departure Date"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </form>
+                          `;
+          attention.custom({ 
+            title: "Choose your dates",
+             msg: html, 
+             willOpen: () => {
+              const elem = document.getElementById("date-picker-1");
+              const rangepicker = new DateRangePicker(elem, {
+                format: "yyyy-mm-dd",
+                showOnFocus: false,
+                orientation: "top"
+              })},
+              preConfirm: () => {
+                return [
+                  document.getElementById("start").value,
+                  document.getElementById("end").value,
+                ];
+              },
+             callback: (results) =>{
+                let form = document.getElementById("check-availbility-form");
+                let formData = new FormData(form);
+                formData.append("csrf_token", "{{.CSRFToken}}")
+
+
+                  fetch("/check-availability-json", {
+                    method: "post",
+                    body: formData
+                  })
+                    .then(response => response.json())
+                    .then(data => {
+                    console.log(data)
+                    console.log(data.OK)
+                    console.log(data.Message)
+                    })
+              },               
+           });
+        });
+        </script>
+{{end}}

@@ -7,8 +7,9 @@ import (
 	"net/http"
 	"path/filepath"
 
+	"github.com/justinas/nosurf"
 	"github.com/pradeepj4u/bookings/cmd/models"
-	"github.com/pradeepj4u/bookings/pkg/config"
+	"github.com/pradeepj4u/bookings/internal/config"
 )
 
 var functions = template.FuncMap{}
@@ -19,12 +20,13 @@ func CreateNewAppConfig(a *config.AppConfig) {
 	app = a
 }
 
-func SetDefaultData(td *models.TempletData) *models.TempletData {
+func SetDefaultData(td *models.TempletData, r *http.Request) *models.TempletData {
+	td.CSRFToken = nosurf.Token(r)
 	return td
 }
 
 // Renders the read file to browser
-func ParseTemplet(w http.ResponseWriter, t string, templetData *models.TempletData) {
+func ParseTemplet(w http.ResponseWriter, r *http.Request, t string, templetData *models.TempletData) {
 	var templetCache map[string]*template.Template
 	if app.UseCache {
 		//create templet cache
@@ -40,7 +42,7 @@ func ParseTemplet(w http.ResponseWriter, t string, templetData *models.TempletDa
 	}
 
 	buf := new(bytes.Buffer)
-	templetData = SetDefaultData(*&templetData)
+	templetData = SetDefaultData(templetData, r)
 	err := temp.Execute(buf, templetData)
 
 	if err != nil {
