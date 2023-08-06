@@ -1,11 +1,13 @@
 package main
 
 import (
+	"encoding/gob"
 	"log"
 	"net/http"
 	"time"
 
 	"github.com/alexedwards/scs/v2"
+	"github.com/pradeepj4u/bookings/cmd/models"
 	"github.com/pradeepj4u/bookings/internal/config"
 	"github.com/pradeepj4u/bookings/internal/handler"
 	"github.com/pradeepj4u/bookings/internal/render"
@@ -16,6 +18,8 @@ var app config.AppConfig
 var session *scs.SessionManager
 
 func main() {
+	// What value we are going to save in the context.
+	gob.Register(models.FormsData{})
 
 	//changes IsProduction
 	app.IsProduction = false

@@ -8,6 +8,7 @@ import (
 
 	"github.com/pradeepj4u/bookings/cmd/models"
 	"github.com/pradeepj4u/bookings/internal/config"
+	"github.com/pradeepj4u/bookings/internal/forms"
 	"github.com/pradeepj4u/bookings/internal/render"
 )
 
@@ -34,10 +35,6 @@ func NewHandller(r *Repository) {
 // Renders the Home Page
 func (m *Repository) Home(w http.ResponseWriter, r *http.Request) {
 	stringMap := map[string]string{}
-	stringMap["test"] = "This is the first data passes"
-	remoteIP := r.RemoteAddr
-	m.App.Session.Put(r.Context(), "remote_ip", remoteIP)
-
 	render.ParseTemplet(w, r, "home.page.tmpl", &models.TempletData{
 		StringMap: stringMap,
 	})
@@ -46,9 +43,7 @@ func (m *Repository) Home(w http.ResponseWriter, r *http.Request) {
 // Renders the About page
 func (m *Repository) About(w http.ResponseWriter, r *http.Request) {
 
-	remoteIp := m.App.Session.GetString(r.Context(), "remote_ip")
 	stringMap := map[string]string{}
-	stringMap["remote_ip"] = remoteIp
 
 	render.ParseTemplet(w, r, "about.page.tmpl", &models.TempletData{
 		StringMap: stringMap,
@@ -80,8 +75,8 @@ func (m *Repository) CheckAvailability(w http.ResponseWriter, r *http.Request) {
 }
 
 type jsonResponse struct {
-	OK      bool
-	Message string
+	OK      bool   `json:"ok"`
+	Message string `json:"message"`
 }
 
 // Returns a JSON response
@@ -118,7 +113,7 @@ func (m *Repository) KingSuit(w http.ResponseWriter, r *http.Request) {
 }
 
 // Renders the Contact Us page
-func (m *Repository) CantactUs(w http.ResponseWriter, r *http.Request) {
+func (m *Repository) ContactUs(w http.ResponseWriter, r *http.Request) {
 
 	remoteIp := m.App.Session.GetString(r.Context(), "remote_ip")
 	stringMap := map[string]string{}
@@ -131,12 +126,61 @@ func (m *Repository) CantactUs(w http.ResponseWriter, r *http.Request) {
 
 // Renders the Check availability post
 func (m *Repository) MakeReservations(w http.ResponseWriter, r *http.Request) {
+	var emptyReservation models.FormsData
+	data := make(map[string]interface{})
 
-	remoteIp := m.App.Session.GetString(r.Context(), "remote_ip")
-	stringMap := map[string]string{}
-	stringMap["remote_ip"] = remoteIp
+	data["makeReservationPageData"] = emptyReservation
 
 	render.ParseTemplet(w, r, "make-reservations.page.tmpl", &models.TempletData{
-		StringMap: stringMap,
+		Form: forms.NewForm(nil),
+		Data: data,
+	})
+}
+func (m *Repository) PostMakeReservations(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+
+	if err != nil {
+		log.Println(err)
+	}
+	makeReservationPageData := models.FormsData{
+		FirstName: r.Form.Get("first_name"),
+		LastName:  r.Form.Get("last_name"),
+		Email:     r.Form.Get("email"),
+		Phone:     r.Form.Get("phone"),
+	}
+	newForm := forms.NewForm(r.PostForm)
+
+	newForm.Required("first_name", "last_name", "email", "phone")
+	newForm.MinLength("first_name", 3, r)
+	newForm.IsEmailValid("email")
+
+	if !newForm.IsFormValid() {
+		data := make(map[string]interface{})
+		data["makeReservationPageData"] = makeReservationPageData
+		render.ParseTemplet(w, r, "make-reservations.page.tmpl", &models.TempletData{
+			Form: newForm,
+			Data: data,
+		})
+		return
+	}
+	m.App.Session.Put(r.Context(), "makeReservationPageData", makeReservationPageData)
+	http.Redirect(w, r, "/reservation-summary", http.StatusSeeOther)
+}
+
+// Renders the About page
+func (m *Repository) ReservationSummary(w http.ResponseWriter, r *http.Request) {
+	reservationPageData, ok := m.App.Session.Get(r.Context(), "makeReservationPageData").(models.FormsData)
+	if !ok {
+		m.App.Session.Put(r.Context(), "CriticalEdit", "Can't get makeReservationPageData in Session")
+		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		log.Println("Unable to get data from Session")
+		return
+	}
+	m.App.Session.Remove(r.Context(), "makeReservationPageData")
+	
+	data := make(map[string]interface{})
+	data["reservationPageData"] = reservationPageData
+	render.ParseTemplet(w, r, "reservation-summary.page.tmpl", &models.TempletData{
+		Data: data,
 	})
 }

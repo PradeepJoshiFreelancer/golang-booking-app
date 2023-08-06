@@ -118,6 +118,18 @@
           text: msg,
         });
       }
+      {{with .CriticalEdit}}
+        notify("{{.}}", "error")
+      {{end}}
+
+      {{with .InfoEdit}}
+        notify("{{.}}", "success")
+      {{end}}
+
+      {{with .WarningEdit}}
+        notify("{{.}}", "warning")
+      {{end}}
+
       function notifyModal(title, text, icon, buttonText) {
         Swal.fire({
           title: title,

@@ -21,6 +21,10 @@ func CreateNewAppConfig(a *config.AppConfig) {
 }
 
 func SetDefaultData(td *models.TempletData, r *http.Request) *models.TempletData {
+	td.InfoEdit = app.Session.PopString(r.Context(), "InfoEdit")
+	td.WarningEdit = app.Session.PopString(r.Context(), "WarningEdit")
+	td.CriticalEdit = app.Session.PopString(r.Context(), "CriticalEdit")
+
 	td.CSRFToken = nosurf.Token(r)
 	return td
 }
