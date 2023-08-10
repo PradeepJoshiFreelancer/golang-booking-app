@@ -3,12 +3,12 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/pradeepj4u/bookings/cmd/models"
 	"github.com/pradeepj4u/bookings/internal/config"
 	"github.com/pradeepj4u/bookings/internal/forms"
+	"github.com/pradeepj4u/bookings/internal/helpers"
 	"github.com/pradeepj4u/bookings/internal/render"
 )
 
@@ -52,26 +52,12 @@ func (m *Repository) About(w http.ResponseWriter, r *http.Request) {
 
 // Renders the Room page
 func (m *Repository) StandardRoom(w http.ResponseWriter, r *http.Request) {
-
-	remoteIp := m.App.Session.GetString(r.Context(), "remote_ip")
-	stringMap := map[string]string{}
-	stringMap["remote_ip"] = remoteIp
-
-	render.ParseTemplet(w, r, "standard-room.page.tmpl", &models.TempletData{
-		StringMap: stringMap,
-	})
+	render.ParseTemplet(w, r, "standard-room.page.tmpl", &models.TempletData{})
 }
 
 // Renders the Check availability post
 func (m *Repository) CheckAvailability(w http.ResponseWriter, r *http.Request) {
-
-	remoteIp := m.App.Session.GetString(r.Context(), "remote_ip")
-	stringMap := map[string]string{}
-	stringMap["remote_ip"] = remoteIp
-
-	render.ParseTemplet(w, r, "check-availability.page.tmpl", &models.TempletData{
-		StringMap: stringMap,
-	})
+	render.ParseTemplet(w, r, "check-availability.page.tmpl", &models.TempletData{})
 }
 
 type jsonResponse struct {
@@ -87,7 +73,9 @@ func (m *Repository) CheckAvailabilityJson(w http.ResponseWriter, r *http.Reques
 	}
 	out, err := json.MarshalIndent(resp, "", "      ")
 	if err != nil {
-		log.Println(err)
+		m.App.ErrorLog.Println("Can not parse the response Json")
+		helpers.ServerError(w, err)
+		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(out)
@@ -102,26 +90,12 @@ func (m *Repository) PostCheckAvailability(w http.ResponseWriter, r *http.Reques
 
 // Renders the Room page
 func (m *Repository) KingSuit(w http.ResponseWriter, r *http.Request) {
-
-	remoteIp := m.App.Session.GetString(r.Context(), "remote_ip")
-	stringMap := map[string]string{}
-	stringMap["remote_ip"] = remoteIp
-
-	render.ParseTemplet(w, r, "king-suit.page.tmpl", &models.TempletData{
-		StringMap: stringMap,
-	})
+	render.ParseTemplet(w, r, "king-suit.page.tmpl", &models.TempletData{})
 }
 
 // Renders the Contact Us page
 func (m *Repository) ContactUs(w http.ResponseWriter, r *http.Request) {
-
-	remoteIp := m.App.Session.GetString(r.Context(), "remote_ip")
-	stringMap := map[string]string{}
-	stringMap["remote_ip"] = remoteIp
-
-	render.ParseTemplet(w, r, "contact.page.tmpl", &models.TempletData{
-		StringMap: stringMap,
-	})
+	render.ParseTemplet(w, r, "contact.page.tmpl", &models.TempletData{})
 }
 
 // Renders the Check availability post
@@ -138,9 +112,8 @@ func (m *Repository) MakeReservations(w http.ResponseWriter, r *http.Request) {
 }
 func (m *Repository) PostMakeReservations(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
-
 	if err != nil {
-		log.Println(err)
+		helpers.ServerError(w, err)
 	}
 	makeReservationPageData := models.FormsData{
 		FirstName: r.Form.Get("first_name"),
@@ -171,13 +144,14 @@ func (m *Repository) PostMakeReservations(w http.ResponseWriter, r *http.Request
 func (m *Repository) ReservationSummary(w http.ResponseWriter, r *http.Request) {
 	reservationPageData, ok := m.App.Session.Get(r.Context(), "makeReservationPageData").(models.FormsData)
 	if !ok {
+
 		m.App.Session.Put(r.Context(), "CriticalEdit", "Can't get makeReservationPageData in Session")
 		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
-		log.Println("Unable to get data from Session")
+		m.App.ErrorLog.Println("Unable to get data from Session")
 		return
 	}
 	m.App.Session.Remove(r.Context(), "makeReservationPageData")
-	
+
 	data := make(map[string]interface{})
 	data["reservationPageData"] = reservationPageData
 	render.ParseTemplet(w, r, "reservation-summary.page.tmpl", &models.TempletData{

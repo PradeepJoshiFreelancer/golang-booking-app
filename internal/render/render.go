@@ -2,6 +2,7 @@ package render
 
 import (
 	"bytes"
+	"fmt"
 	"html/template"
 	"log"
 	"net/http"
@@ -28,6 +29,8 @@ func SetDefaultData(td *models.TempletData, r *http.Request) *models.TempletData
 	td.CSRFToken = nosurf.Token(r)
 	return td
 }
+
+var pathToTemplet = "./templet"
 
 // Renders the read file to browser
 func ParseTemplet(w http.ResponseWriter, r *http.Request, t string, templetData *models.TempletData) {
@@ -62,7 +65,7 @@ func ParseTemplet(w http.ResponseWriter, r *http.Request, t string, templetData 
 func CreateChacheMap() (map[string]*template.Template, error) {
 	chacheMap := map[string]*template.Template{}
 
-	pages, err := filepath.Glob("./templet/*.page.tmpl")
+	pages, err := filepath.Glob(fmt.Sprintf("%s/*.page.tmpl", pathToTemplet))
 	if err != nil {
 		return chacheMap, err
 	}
@@ -76,12 +79,12 @@ func CreateChacheMap() (map[string]*template.Template, error) {
 
 			return chacheMap, err
 		}
-		layout, err := filepath.Glob("./templet/*.layout.tmpl")
+		layout, err := filepath.Glob(fmt.Sprintf("%s/*.layout.tmpl", pathToTemplet))
 		if err != nil {
 			return chacheMap, err
 		}
 		if len(layout) > 0 {
-			ts, err = ts.ParseGlob("./templet/*.layout.tmpl")
+			ts, err = ts.ParseGlob(fmt.Sprintf("%s/*.layout.tmpl", pathToTemplet))
 			if err != nil {
 
 				return chacheMap, err
