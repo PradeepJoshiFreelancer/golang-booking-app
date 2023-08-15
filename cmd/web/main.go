@@ -9,6 +9,7 @@ import (
 
 	"github.com/alexedwards/scs/v2"
 	"github.com/pradeepj4u/bookings/cmd/models"
+	"github.com/pradeepj4u/bookings/driver"
 	"github.com/pradeepj4u/bookings/internal/config"
 	"github.com/pradeepj4u/bookings/internal/handler"
 	"github.com/pradeepj4u/bookings/internal/helpers"
@@ -23,11 +24,17 @@ var errorLog *log.Logger
 
 func main() {
 
-	err := run()
+	db, err := run()
 
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	defer db.SQL.Close()
+
+	defer close(app.MailChan)
+	//listen to the email
+	listenToMail()
 
 	log.Println("Starting at port:", portNumber)
 	svr := &http.Server{
@@ -38,10 +45,17 @@ func main() {
 	log.Fatal(erro)
 }
 
-func run() error {
+func run() (*driver.DB, error) {
 
 	// What value we are going to save in the context.
-	gob.Register(models.FormsData{})
+	gob.Register(models.Room{})
+	gob.Register(models.User{})
+	gob.Register(models.Restriction{})
+	gob.Register(models.Reservation{})
+	gob.Register(models.RoomRestriction{})
+
+	emailData := make(chan models.EmailData, 10)
+	app.MailChan = emailData
 
 	//changes IsProduction
 	app.IsProduction = false
@@ -61,21 +75,28 @@ func run() error {
 
 	app.Session = session
 
-	// fmt.Println("Hello World")
+	//making a database connection
+	log.Println("Connecting to the database..")
+	db, err := driver.ConnectSQL("host=localhost port=5432 dbname=bookings user=postgres password=India@100")
+	if err != nil {
+		log.Fatal("Cannot connect to the database", err)
+	}
+	log.Println("Connected to the database!")
+
 	tc, err := render.CreateChacheMap()
 	if err != nil {
 		log.Fatal(err)
-		return err
+		return nil, err
 	}
 	app.TempletCache = tc
 	app.UseCache = false
 
-	repo := handler.NewRpository(&app)
+	repo := handler.NewRpository(&app, db)
 	handler.NewHandller(repo)
 
-	render.CreateNewAppConfig(&app)
+	render.NewRenderer(&app)
 
 	helpers.NewHelper(&app)
 
-	return nil
+	return db, nil
 }

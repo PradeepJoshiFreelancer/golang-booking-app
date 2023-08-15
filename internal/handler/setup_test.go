@@ -10,8 +10,8 @@ import (
 	"time"
 
 	"github.com/alexedwards/scs/v2"
-	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/justinas/nosurf"
 	"github.com/pradeepj4u/bookings/cmd/models"
 	"github.com/pradeepj4u/bookings/internal/config"
@@ -25,7 +25,7 @@ var functions = template.FuncMap{}
 
 func getRoutes() http.Handler {
 	// What value we are going to save in the context.
-	gob.Register(models.FormsData{})
+	gob.Register(models.Reservation{})
 
 	//changes IsProduction
 	app.IsProduction = false
@@ -50,7 +50,7 @@ func getRoutes() http.Handler {
 	repo := NewRpository(&app)
 	NewHandller(repo)
 
-	render.CreateNewAppConfig(&app)
+	render.NewRenderer(&app)
 
 	mux := chi.NewRouter()
 

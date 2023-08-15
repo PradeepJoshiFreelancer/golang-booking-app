@@ -107,6 +107,7 @@
     <script src="https://cdn.jsdelivr.net/npm/vanillajs-datepicker@1.3.3/dist/js/datepicker-full.min.js"></script>
     <script src="https://unpkg.com/notie"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="/static/js/app.js"> </script>
 
        {{block "js" .}}
    {{end}}
@@ -137,82 +138,6 @@
           icon: icon,
           confirmButtonText: buttonText,
         });
-      }
-      function Promt() {
-        const toast = ({
-          icon = "success",
-          title = "",
-          position = "top-end",
-        }) => {
-          const Toast = Swal.mixin({
-            toast: true,
-            position: position,
-            icon: icon,
-            title: title,
-            showConfirmButton: false,
-            timer: 3000,
-            timerProgressBar: true,
-            didOpen: (toast) => {
-              toast.addEventListener("mouseenter", Swal.stopTimer);
-              toast.addEventListener("mouseleave", Swal.resumeTimer);
-            },
-          });
-
-          Toast.fire();
-        };
-        const success = ({ title = "", msg = "", footer = "" }) => {
-          Swal.fire({
-            icon: "success",
-            title: title,
-            text: msg,
-            footer: footer,
-          });
-        };
-        const error = ({ title = "", msg = "", footer = "" }) => {
-          Swal.fire({
-            icon: "error",
-            title: title,
-            text: msg,
-            footer: footer            
-          });
-        };
-        const custom = async ({ title = "", msg = "", callback, willOpen, preConfirm }) => {
-          const { value: results } = await Swal.fire({
-            title: title,
-            html: msg,
-            backdrop: true,
-            showCancelButton: true,
-            focusConfirm: false,
-            willOpen: () =>{
-              if(willOpen){
-                willOpen()
-              }
-            },
-            preConfirm: () =>{
-              if(preConfirm){
-                preConfirm()
-              }
-            },
-          });
-          if (results){
-            console.log(results.dismiss)
-            if(results.dismiss !== Swal.DismissReason.cancel){
-              if(results.value !== ""){
-                callback(results)
-              }else{
-                callback(false)
-              }
-            }else{
-              callback(false)
-            }
-          }
-        };
-        return {
-          toast: toast,
-          success: success,
-          error: error,
-          custom: custom,
-        };
       }
     </script>
   </body>

@@ -17,7 +17,7 @@ var functions = template.FuncMap{}
 
 var app *config.AppConfig
 
-func CreateNewAppConfig(a *config.AppConfig) {
+func NewRenderer(a *config.AppConfig) {
 	app = a
 }
 
