@@ -7,13 +7,19 @@ import (
 	"log"
 	"net/http"
 	"path/filepath"
+	"time"
 
 	"github.com/justinas/nosurf"
 	"github.com/pradeepj4u/bookings/cmd/models"
 	"github.com/pradeepj4u/bookings/internal/config"
 )
 
-var functions = template.FuncMap{}
+var functions = template.FuncMap{
+	"humanDate":  HumanDate,
+	"formatDate": FormatDate,
+	"iterate":    Iterate,
+	"add":        Add,
+}
 
 var app *config.AppConfig
 
@@ -21,10 +27,36 @@ func NewRenderer(a *config.AppConfig) {
 	app = a
 }
 
+// Formats the date in YYYY-MM-DD format
+func HumanDate(date time.Time) string {
+	return date.Format("2006-01-02")
+}
+
+func Add(a, b int) int {
+	return a + b
+}
+
+func FormatDate(date time.Time, format string) string {
+	return date.Format(format)
+}
+
+// Iterate returns the iteration of int
+func Iterate(count int) []int {
+	var i int
+	var items []int
+
+	for i = 0; i < count; i++ {
+		items = append(items, i)
+	}
+	return items
+}
 func SetDefaultData(td *models.TempletData, r *http.Request) *models.TempletData {
 	td.InfoEdit = app.Session.PopString(r.Context(), "InfoEdit")
 	td.WarningEdit = app.Session.PopString(r.Context(), "WarningEdit")
 	td.CriticalEdit = app.Session.PopString(r.Context(), "CriticalEdit")
+	if app.Session.Exists(r.Context(), "user_id") {
+		td.IsAuthenticated = 1
+	}
 
 	td.CSRFToken = nosurf.Token(r)
 	return td
@@ -35,6 +67,7 @@ var pathToTemplet = "./templet"
 // Renders the read file to browser
 func ParseTemplet(w http.ResponseWriter, r *http.Request, t string, templetData *models.TempletData) {
 	var templetCache map[string]*template.Template
+
 	if app.UseCache {
 		//create templet cache
 		templetCache = app.TempletCache
@@ -60,6 +93,7 @@ func ParseTemplet(w http.ResponseWriter, r *http.Request, t string, templetData 
 	if err != nil {
 		log.Println(err)
 	}
+
 }
 
 func CreateChacheMap() (map[string]*template.Template, error) {

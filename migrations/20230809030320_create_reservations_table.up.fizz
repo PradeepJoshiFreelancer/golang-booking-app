@@ -7,4 +7,5 @@ create_table("reservations") {
   t.Column("start_date", "date", {})
   t.Column("end_date", "date", {})
   t.Column("room_id", "integer", {})
+  t.Column("processed", "integer", {default: 0})
 }
